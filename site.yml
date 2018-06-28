@@ -1,0 +1,22 @@
+
+- hosts: all
+  gather_facts: no
+  become: yes
+  pre_tasks:
+      - raw: ln -sf /usr/bin/python3 /usr/bin/python
+      - setup:
+  tasks:
+      - file: path=/etc/resolvconf/resolv.conf.d state=directory
+      - template: src=resolv.j2 dest="{{ item }}" force=yes
+        with_items:
+           - /etc/resolvconf/resolv.conf.d/base
+           - /etc/resolv.conf
+      - apt: name=resolvconf state=present
+      - command: resolvconf -u
+      - shell: systemctl mask systemd-logind.service
+
+- hosts: docker-manager
+  gather_facts: no
+
+- hosts: docker-nodes
+  gather_facts: no
